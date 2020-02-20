@@ -24,4 +24,15 @@ C++有很多版本,如 C++98,C++03,C++ 11,C++14
 * C++语言
 * C++标准库
 
+经典的书：
+* C++ Primer (C++第一个编译器的作者写的)
+* C++ Programming Language (C++之父写的)
+* Effective C++ (专家写的，以条款方式写的)
+* The C++ Standard Library(写的C++的标准库)
+* STL源码剖析(较深入的将标准库)
+
+## 2、头文件与类的声明
+C vs C++
+![C vs. C++](https://github.com/LHesperus/Cpp-Notes/blob/master/%E4%BE%AF%E6%8D%B7-C%2B%2B%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E9%AB%98%E7%BA%A7%E5%BC%80%E5%8F%91%E7%AC%94%E8%AE%B0/pic/2-1.png)
+
   
