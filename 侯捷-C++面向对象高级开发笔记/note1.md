@@ -1,27 +1,12 @@
-<!-- TOC -->
 
-- [侯捷老师讲C++](#侯捷老师讲c)
-    - [1、C++ 编程简介](#1c-编程简介)
-        - [C++历史](#c历史)
-    - [2、头文件与类的声明](#2头文件与类的声明)
-        - [C++的代码基本形式](#c的代码基本形式)
-        - [头文件中的防卫式声明(guard)](#头文件中的防卫式声明guard)
-        - [头文件的布局](#头文件的布局)
-            - [class的声明](#class的声明)
-    - [3、内敛函数、访问级别、构造函数](#3内敛函数访问级别构造函数)
-        - [inline(内联)函数](#inline内联函数)
-        - [访问级别(access level)](#访问级别access-level)
-        - [构造函数(construct，ctor)](#构造函数constructctor)
-        - [重载 overloading](#重载-overloading)
 
-<!-- /TOC -->
-# 侯捷老师讲C++
+## 简介
 &ensp;&ensp;&ensp; &ensp;此文档为本人边看视频边记的笔记，方便以后自己回看笔记时能快速想起课程内容，详细内容请看老师讲的视频。<br>
 &ensp;&ensp;&ensp; &ensp;课程来源:[GeekBand](https://study.163.com/course/introduction/1634002.htm),也可以在b站搜到.
 
 如果不能显示出图，请看Github的博文。
 
-## 1、C++ 编程简介
+## C++ 编程简介
 
 基于对象(Object Based)
 * class without pointer members -Complex
@@ -50,7 +35,7 @@ C++有很多版本,如 C++98,C++03,C++ 11,C++14
 * The C++ Standard Library(写的C++的标准库)
 * STL源码剖析(较深入的将标准库)
 
-## 2、头文件与类的声明
+## 头文件与类的声明
 C vs C++ <br>
 ![C vs. C++](https://github.com/LHesperus/Cpp-Notes/blob/master/%E4%BE%AF%E6%8D%B7-C%2B%2B%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E9%AB%98%E7%BA%A7%E5%BC%80%E5%8F%91%E7%AC%94%E8%AE%B0/pic/2-1.png)
 
@@ -151,7 +136,7 @@ private:
 ```
 
 
-## 3、内敛函数、访问级别、构造函数
+## 内敛函数、访问级别、构造函数
 ### inline(内联)函数
 ```cpp
 class complex
@@ -244,5 +229,129 @@ complex (double r = 0, double i = 0)
 图中的两个构造函数是不能同时存在的，因为在创建对象时，无法知道应该调用哪个构造函数。
 
 同名的函数在编译器处理后会变成其他名字。这个名字是给机器看的。编译器会把函数的名称，参数有几个，参数是什么类型编码，机器会区分出同名的不同函数。
+
+构造函数也可以放在private里，这是不能按照之前的方法创建对象。详细的使用方法这里先不讲。但要知道有这种写法。
+如设计模式Singleton：
+```cpp
+class A {
+public:
+    static A& getInstance();
+    setup() { ... }
+private:
+    A();
+    A(const A& rhs);
+    ...
+};
+A& A::getInstance()
+{
+    static A a;
+    return a;
+}
+```
+```cpp
+A::getInstance().setup();
+```
+
+## 参数传递与返回
+### 定义函数是确定是否添加const
+ ```cpp
+ class complex
+{ 
+public:
+    complex (double r = 0, double i = 0)
+    : re (r), im (i)
+    { }
+    complex& operator += (const complex&);
+    double real () const { return re; }
+    double imag () const { return im; }
+private:
+    double re, im;
+    friend complex& __doapl (complex*, const complex&);
+};
+ ```
+ 注意
+ ```cpp
+ double real () const { return re; }
+ ```
+ 函数中的const是十分重要的，很多人会忽略。
+ const在此处的表示函数只是将数据取出，并不改变数据内容。
+
+ __class的函数可以分为会改变函数内容的和不会改变函数内容的。不会改变数据内容的函数要加加const__。
+开发人员在设计接口时就要确定是否要加const。
+ 
+ 如果不加会产生什么后果：
+ ```cpp
+ {
+    const complex c1(2,1);
+    cout << c1.real();
+    cout << c1.imag();
+}
+```
+上面的const说明使用者复数中的2，1是不能变的，假如定义时不加const，说明这个函数可能会改数据，这样在定义和调用就发生了冲突。
+
+### 参数传递(pass by value vs. pass by reference(to const))
+
+```cpp
+class complex
+{ 
+public:
+    complex (double r = 0, double i = 0)
+        : re (r), im (i)
+    { }
+    complex& operator += (const complex&);//pass by reference
+    double real () const { return re; }
+    double imag () const { return im; }
+private:
+    double re, im;
+    friend complex& __doapl (complex*, const complex&);
+};
+```
+* by value :是数据整包传过去，数据有几个字节就传几个字节
+* by reference(引用)：带&,传引用相当与传指针的速度。
+* by reference(to const):没有const时，传给对方的数据，对方可能修改后影响我，如果不想自己受到影响，就要加上const，表示此引用不会该改变数据，对方改变就会出错。
+
+__良好的习惯：参数传递尽量的传引用__
+
+### 返回值传递(return by value vs. return by reference(to const))
+上述代码中
+```cpp
+complex& operator += (const complex&);//return by reference
+double real () const { return re; }//return by value
+```
+### 友元 friend
+```cpp
+inline complex&
+__doapl (complex* ths, const complex& r)
+{
+    ths->re += r.re;//自由取得friend 的private成员。
+    ths->im += r.im;
+    return *ths;
+}
+```
+
+相同class的各个object互为friends
+
+![4-1](https://github.com/LHesperus/Cpp-Notes/blob/master/%E4%BE%AF%E6%8D%B7-C%2B%2B%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E9%AB%98%E7%BA%A7%E5%BC%80%E5%8F%91%E7%AC%94%E8%AE%B0/pic/4-1.png)
+
+### 使用场景
+
+看下面的例子do assignment plus(__doapl)
+```cpp
+inline complex&
+__doapl(complex* ths, const complex& r)
+{
+    ths->re += r.re;
+    ths->im += r.im;
+    return *ths;
+}
+inline complex&
+complex::operator += (const complex& r)
+{
+    return __doapl (this, r);
+}
+```
+上述代码中的第一个参数(ths)会发生改动,则不能加const，第二个参数(r)不会发生改动,可以加const。
+
+在函数里面创建的东西不能加引用往外传，因为那是局部的，传到外面就消失了，其他情况都可以传引用(inline complex&)。
 
 
