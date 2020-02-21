@@ -310,7 +310,7 @@ private:
 * by reference(引用)：带&,传引用相当与传指针的速度。
 * by reference(to const):没有const时，传给对方的数据，对方可能修改后影响我，如果不想自己受到影响，就要加上const，表示此引用不会该改变数据，对方改变就会出错。
 
-__良好的习惯：参数传递尽量的传引用__
+__良好的习惯：参数传递尽量的传引用，速度快__
 
 ### 返回值传递(return by value vs. return by reference(to const))
 上述代码中
@@ -354,4 +354,51 @@ complex::operator += (const complex& r)
 
 在函数里面创建的东西不能加引用往外传，因为那是局部的，传到外面就消失了，其他情况都可以传引用(inline complex&)。
 
+## 操作符重载(operator overloading)
 
+C++中操作符其实就是一种函数，也可以重载。 
+### 成员函数重载
+
+所有的成员函数都带有一个隐藏的参数(this)，谁调用，谁就是this。this是一个指针，下面是一个复数+=运算的例子。
+
+![5-1](https://github.com/LHesperus/Cpp-Notes/blob/master/%E4%BE%AF%E6%8D%B7-C%2B%2B%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E9%AB%98%E7%BA%A7%E5%BC%80%E5%8F%91%E7%AC%94%E8%AE%B0/pic/5-1.png)
+
+__传递者无需知道接收者是以reference形式接收__,上述代码中编写
+return *ths;时不必考虑返回的是以什么形式接收的。
+
+此外，complex::operator +=的返回 complex&，也可以返回void，这时执行，c2+=c1没有问题，但是如果连续赋值c3+=c2+=c1;就会有问题，所以严谨写法为返回complex&。
+
+### 非成员函数重载(无this)
+
+```cpp
+inline complex
+operator + (const complex& x, const complex& y)//复数加复数
+{
+    return complex (real (x) + real (y),
+    imag (x) + imag (y));
+}
+inline complex
+operator + (const complex& x, double y)//复数+实数
+{
+    return complex (real (x) + y, imag (x));
+}
+inline complex
+operator + (double x, const complex& y)//实数+复数
+{
+    return complex (x + real (y), imag (y));
+}
+```
+注意上述代码不能return by reference，以为他们的返回必定是local object。
+
+complex()的语法是，temp object(临时对象)， typename();
+
+```cpp
+#include <iostream.h>
+ostream&
+operator << (ostream& os, const complex& x)
+{
+    return os << '(' << real (x) << ','
+              << imag (x) << ')';
+}
+```
+cout是一种对象，ostream.
