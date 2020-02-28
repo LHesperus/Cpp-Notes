@@ -136,7 +136,7 @@ private:
 ```
 
 
-## 内敛函数、访问级别、构造函数
+## 内联函数、访问级别、构造函数
 ### inline(内联)函数
 ```cpp
 class complex
@@ -388,9 +388,9 @@ operator + (double x, const complex& y)//实数+复数
     return complex (x + real (y), imag (y));
 }
 ```
-注意上述代码不能return by reference，以为他们的返回必定是local object。
+注意上述代码不能return by reference，因为他们的返回必定是local object。
 
-complex()的语法是，temp object(临时对象)， typename();
+complex()的语法是，__temp object(临时对象)__， typename();
 
 ```cpp
 #include <iostream.h>
@@ -402,3 +402,185 @@ operator << (ostream& os, const complex& x)
 }
 ```
 cout是一种对象，ostream.
+
+## 拷贝构造，拷贝复制，析构
+
+* Class with pointer member(s)：string
+
+```cpp
+#ifndef __MYSTRING__
+#define __MYSTRING__
+class String
+{ 
+    ...
+};
+String::function(...) ...
+Global-function(...) ...
+#endif
+```
+
+```cpp
+int main()
+{
+    String s1(),
+    String s2("hello");
+    String s3(s1);
+    cout << s3 << endl;
+    s3 = s2;
+    cout << s3 << endl;
+}
+```
+complex等不带指针类的拷贝构造赋值等是编译器给的拷贝构造赋值方式，一位一位的搬过去。
+而带指针的类(string)拷贝构造赋值需要自己写，不能按编译器的来。
+
+```cpp
+class String
+{
+public:
+    String(const char* cstr = 0);//构造函数
+    String(const String& str);//拷贝构造函数（带自己的String，所以叫拷贝）
+    String& operator=(const String& str);//拷贝赋值
+    ~String();//析构函数
+    char* get_c_str() const { return m_data; }//成员函数
+private:
+    char* m_data;
+};
+```
+带指针的要写三个特殊函数(Big Three)：
+* 拷贝构造函数
+* 拷贝赋值
+* 析构函数
+
+### ctor和dtor(构造函数和析构函数)
+
+```cpp
+inline
+String::String(const char* cstr = 0)
+{
+    if (cstr) {
+        m_data = new char[strlen(cstr)+1];
+        strcpy(m_data, cstr);
+    } 
+    else {// 未指定初值
+        m_data = new char[1];
+        *m_data = '\0';//放结束符号，空
+    }
+}
+inline
+String::~String()//析构，清理
+{
+    delete[] m_data;
+}
+
+```
+
+带指针的要写析构函数，因为动态分配内存需要释放，对象死亡的前一刻，要用delete将内存杀掉。
+
+### 拷贝构造和拷贝赋值
+如果不自己编写，编译器做一位一位的拷贝。并且会发生 `内存泄漏` 。
+如，字符串赋值，b=a，赋值后，b原先的内存没有指针指向，造成内存泄漏。同时，a和b内存由相同的指针指向，改a或b会对对方造成影响，很危险。这种叫`浅拷贝`。
+
+而需要写的是 `深拷贝`。
+
+![6-1](https://github.com/LHesperus/Cpp-Notes/blob/master/%E4%BE%AF%E6%8D%B7-C%2B%2B%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E9%AB%98%E7%BA%A7%E5%BC%80%E5%8F%91%E7%AC%94%E8%AE%B0/pic/6-1.png)
+
+拷贝构造函数
+
+```cpp
+inline
+String::String(const String& str)
+{
+    m_data = new char[ strlen(str.m_data) + 1 ];
+    strcpy(m_data, str.m_data);//深拷贝
+}
+```
+```cpp
+{
+    String s1("hello ");
+    String s2(s1);
+    // String s2 = s1;//两种赋值方法相同
+}
+```
+
+拷贝赋值函数:
+
+左边=右边。
+过程：先把左边清空，分配出和右边一样的空间，再把右边拷贝过来。
+
+```cpp
+inline
+String& String::operator=(const String& str)
+{
+    if (this == &str)//检测自我赋值(self assignment)：检测是不是自己赋值给自己。s1=s1
+        return *this;
+    delete[] m_data;//第一步
+    m_data = new char[  strlen(str.m_data) + 1 ];//第二步
+    strcpy(m_data, str.m_data);//第三步
+    return *this;
+}
+```
+
+## 栈(stack),堆(heap)
+本节讲`new`
+
+Stack，是存在于某作用域(scope) 的一块内存空间(memory space)。当你调用函数，函数本身即会形成一个stack 用来放置它所接收的参数，以及返
+回地址。
+
+__在函数本体(function body) 内声明的任何变量，其所使用的内存块都取自上述stack__。
+
+Heap，或者称为system heap，是指由操作系统提供的一块global 内存空间，程序可动态分配(dynamic allocated) 从某中获得若干区块(blocks)。
+
+```cpp
+class Complex { … };
+...
+Complex c3(1,2);
+{
+    Complex c1(1,2);//c1 所占用的空间來自stack
+    static Complex c2(1,2);
+    Complex* p = new Complex(3);//Complex(3) 是个临时对象，其所占用的空间乃是以new 自heap 动态分配而得，并由p 指向。
+    delete p;
+}
+```
+
+* c1 便是stack object，其生命在作用域(scope) 结束之后结束。这种作用域内的object，又称为auto object，因为它会被「自动」清理。
+
+* c2 便是static object，其生命在作用域(scope)结束之后仍然存在，直到整个程序结束。
+
+* 还有一种是全局对象(global object),c3 便是global object，其生命在整个程序结束之后
+才结束。你也可以把它视为一种static object，其作用域是「整个程序」。
+
+* p 所指的便是heap object，其生命在它被deleted 之后结束。
+如果不加delete，会出現内存泄漏(memory leak)，因为当作用域结束，p 所指的heap object 仍然存在，但指针p 的生命却结束了，作用域之外再也看不到p(也就沒机会delete p）。
+
+C++中分配内存和释放的内部实现是C语言中的malloc，free。
+
+new: 先分配memory，再调用ctor(Complex)
+
+![8-1](https://github.com/LHesperus/Cpp-Notes/blob/master/%E4%BE%AF%E6%8D%B7-C%2B%2B%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E9%AB%98%E7%BA%A7%E5%BC%80%E5%8F%91%E7%AC%94%E8%AE%B0/pic/8-1.png)
+
+delete:先调用dtor，再释放memory(Complex)
+
+![8-2](https://github.com/LHesperus/Cpp-Notes/blob/master/%E4%BE%AF%E6%8D%B7-C%2B%2B%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E9%AB%98%E7%BA%A7%E5%BC%80%E5%8F%91%E7%AC%94%E8%AE%B0/pic/8-2.png)
+
+new: 先分配memory，再调用ctor(String)
+
+![8-3](https://github.com/LHesperus/Cpp-Notes/blob/master/%E4%BE%AF%E6%8D%B7-C%2B%2B%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E9%AB%98%E7%BA%A7%E5%BC%80%E5%8F%91%E7%AC%94%E8%AE%B0/pic/8-3.png)
+
+delete:先调用dtor，再释放memory(String)
+
+![8-4](https://github.com/LHesperus/Cpp-Notes/blob/master/%E4%BE%AF%E6%8D%B7-C%2B%2B%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E9%AB%98%E7%BA%A7%E5%BC%80%E5%8F%91%E7%AC%94%E8%AE%B0/pic/8-4.png)
+
+
+
+
+
+ ### 动态分配内存块(memory block), in VC
+### 动态分配所得的array
+ 老师讲的很好，看视频。其他教程和书籍一般不讲这些。
+ 概括来说，就是操作系统中实际分配的内存并不是我们平时认为的大小，而是有一些附加内存，并且有调试模式和非调试模式。分配的内存大小要是16的整数倍。小于的话要补上pad(00000000)。
+
+ ### array new 一定要搭配array delete
+
+![8-5](https://github.com/LHesperus/Cpp-Notes/blob/master/%E4%BE%AF%E6%8D%B7-C%2B%2B%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E9%AB%98%E7%BA%A7%E5%BC%80%E5%8F%91%E7%AC%94%E8%AE%B0/pic/8-5.png)
+
+delete[]:表示删除的是数组，编译器会调用多次析构函数。
