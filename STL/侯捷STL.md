@@ -32,6 +32,7 @@ STL可分为容器(containers)、迭代器(iterators)、空间配置器(allocato
 
 
 ### 模板
+[模板优缺点](https://www.cnblogs.com/shines77/p/3179022.html)
 面向对象是数据和方法放一起。
 泛型是数据和方法分开。（通过接口传数据，如algorithm中的迭代器）
 **模板分类**
