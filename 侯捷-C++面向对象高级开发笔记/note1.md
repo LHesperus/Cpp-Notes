@@ -1,5 +1,12 @@
-
-
+---
+title: 侯捷-C++面向对象高级开发笔记
+mathjax: true
+tags:
+  - 学习笔记
+categories:
+  - C/C++
+date: 2020-7-3 09:04:00
+---
 ## 简介
 &ensp;&ensp;&ensp; &ensp;此文档为本人边看视频边记的笔记，方便以后自己回看笔记时能快速想起课程内容，详细内容请看老师讲的视频。<br>
 &ensp;&ensp;&ensp; &ensp;课程来源:[GeekBand](https://study.163.com/course/introduction/1634002.htm),也可以在b站搜到.

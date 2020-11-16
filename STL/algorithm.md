@@ -1,3 +1,12 @@
+---
+title: STL-algorithm
+mathjax: true
+tags:
+  - 学习笔记
+categories:
+  - C/C++
+date: 2020-8-19 17:36:00
+---
 ### STL algorithm
 泛型算法本身不会执行容器的操作，他们只会运行迭代器之上。永远不会添加和删除元素。不是说容器经过算法后容器大小不变，而是算法会通过使用迭代器而控制容器，而不是直接控制容器。如插入器(inserter)
 

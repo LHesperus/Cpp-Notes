@@ -1,3 +1,12 @@
+---
+title: extern
+mathjax: true
+tags:
+  - 学习笔记
+categories:
+  - C/C++
+date: 2020-7-25 10:09:00
+---
 ### extern 
 
 ```C

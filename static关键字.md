@@ -1,3 +1,12 @@
+---
+title: static关键字
+mathjax: true
+tags:
+  - 学习笔记
+categories:
+  - C/C++
+date: 2020-7-24 15:57:00
+---
 ### static关键字
 
 #### 参考

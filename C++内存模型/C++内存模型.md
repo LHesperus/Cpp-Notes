@@ -1,3 +1,12 @@
+---
+title: C++ 内存模型
+mathjax: true
+tags:
+  - 学习笔记
+categories:
+  - C/C++
+date: 2020-7-24 15:09:00
+---
 # C++ 内存模型
 
 ## 参考资料

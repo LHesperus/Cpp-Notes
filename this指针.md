@@ -1,3 +1,12 @@
+---
+title: this指针
+mathjax: true
+tags:
+  - 学习笔记
+categories:
+  - C/C++
+date: 2020-7-25 15:23:00
+---
 ### this指针
 ```C
 #ifndef THIS_TEST_H
